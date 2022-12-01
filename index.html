@@ -13,9 +13,87 @@
     <script type='text/babel'>
       //https://www.acme-api.com/api/companies
       //https://www.acme-api.com/api/companies/:id/companyProfits
-      const App = () => {
+      const BASE_URL = 'https://www.acme-api.com/api';
+      const COMPANIES_URL = `${BASE_URL}/companies`;
+      console.log(COMPANIES_URL)
+
+      const Profits = ({profits})=> {
         return (
-          <h1>Start Building</h1>
+          <ul>
+              {
+                profits.map( profit => {
+                  return (
+                    <li>
+                      { profit.amount}
+                    </li>
+                  )
+                })
+              }
+                
+            </ul>
+        );
+      }
+
+
+      const Companies = ({ companies })=> {
+        
+        return (
+          <ul>
+              {
+                companies.map(company => {
+                  return (
+                    <li>
+                      <a href={`#${company.id}`}>
+                        {company.name}
+                      </a>
+                    </li>
+                  );
+                })
+              }
+            </ul>
+        )
+
+      }
+
+      const App = () => {
+        const {useState} = React;
+        const [companies, setCompanies] = useState([]) 
+        const [profits, setProfits] = useState([]) 
+
+        const loadCompanies = async ()=> {
+          const response = await fetch (COMPANIES_URL)
+          const json = await response.json();
+          setCompanies(json);
+        }
+
+
+        const loadProfits = async ()=> {
+          const id = window.location.hash.slice(1);
+          if(!id){
+            setProfits([]);
+          }
+          else{
+            const response = await fetch(`${COMPANIES_URL}/${id}/companyProfits`);
+            const json = await response.json();
+            setProfits(json)
+          }
+          
+        }
+
+
+        React.useEffect(()=> {
+          loadCompanies();
+          window.addEventListener('hashchange', loadProfits);
+          loadProfits();
+        }, [])
+        
+        return (
+          <div>
+            <h1><a href="#">Acme Companies</a></h1>
+            <Companies companies={ companies } />
+            <Profits profits={ profits } />
+          </div>
+          
         );
       }
 
